@@ -43,6 +43,11 @@ While the contents of the `mylibrary/project.vim` would be:
 		let g:project_project_name = "mylibrary.vcxproj"
 		let g:project_exe_name = "libtest.exe"
 
+In order the build the project that the current file belongs to push
+`<Leader>bp`
+and in order to build the root project push
+`<Leader>br`
+
 License
 ========
 
