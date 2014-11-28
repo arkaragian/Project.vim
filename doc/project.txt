@@ -1,0 +1,97 @@
+=========================================================================
+CONTENTS                                          *ProjectContents*
+
+    1. Usage ................ |ProjectUsage| 
+    2. Bugs ................. |ProjectBugs|
+    4. Mappings ............. |ProjectMappings|
+    5. Configuration ........ |ProjectConfiguration|
+
+==========================================================================
+Section 1: Usage                                       *ProjectUsage*
+
+*project.vim* adds support for projects and subprojects.  This plugin does not
+provide a build system but instead provides an easy way to quickly build the
+respective build recipe depending on the file you are currently editing this
+is achieved by providing user generated files namely |root.vim| and
+|project.vim| files that provide information on how to use a user selected
+build system to build projects. This approach allow for the developer to be
+flexible to use multiple buildsystems for different parts of a source tree.
+project.vim also automatically reloads the appropriate root.vim and
+project.vim files whenever the user changes the file that is being currently
+edited.
+
+==========================================================================
+Section 2: Bugs                                *ProjectRequirements*
+
+This plugin was developed on VIM 7.4 and has been tested only on windows
+operating systems. However it should be working fine on UNIX operating systems
+It should also work in other older vim versions > 7.0 for any issues you may
+encounter please open an issue on github
+
+==========================================================================
+Section 4: Mappings                                    *ProjectMappings*
+
+This plugin currently defines mappings to:
+	-Open the current root.vim               => <Leader>or (Open Root)
+	-Open the current project.vim            => <Leader>op (Open Project)
+	-Build the current root configuration    => <Leader>br (Build Root)
+	-Build the current project configuration => <Leader>bp (Build Project)
+
+==========================================================================
+Section 5: Configuration                               *ProjectConfiguration*
+
+The plugin defined mappings can be disabled by adding the following line
+in your .vimrc:
+
+	let g:project_map_keys = 0
+
+To disable automatic sourcing of root and project files add
+
+	let g:project_auto_load_conf_files = 0
+
+If you want to disable the plugin completely you may add:
+	leg g:loaded_project = 1
+
+Custom configurations are also available. By using the |GetRootDir()|
+|GetProjectDir()| and |RefreshSolution()| functions. Have in mind that
+the plugin uses the |g:root_dir| and |g:proj_dir| variables to store
+the location of the root and project directories.
+
+The configuration for the project and subprojects resides in the
+relevant |root.vim| and |project.vim| files those files use the
+following global variables:
+
+The <prefix> should be either "root_" or "project_" depending on
+the file that defines those variables
+
+	|g:<prefix>build_exe|:           Is the path of the program that executes the build
+                                 this may be the GNU Make, nmake, msbuild or any other
+							                   build system
+  |g:<prefix>build_opts|:          Are the command line options that you may want to supply to
+							                   your build system.
+  |g:<prefix>project_rel_path:|    Is the path of the directory that contains the build
+                                 file of your project. This path must be relative to the root directory of your
+                                 project. The root directory is the directory where the |root.vim| is located
+ |g:<prefix>project_name:|         Is the name of the project build file
+
+An example root.vim would be the following:
+
+let g:root_build_exe = "\"C:/Program Files (x86)/MSBuild/12.0/Bin/msbuild.exe\""
+let g:root_build_opts = ""
+let g:root_project_rel_path = "build"
+let g:root_project_name = "myhugeproject.sln"
+let g:root_exe_name = "executable.exe"
+
+While an example project.vim would be:
+
+let g:project_build_exe = "\"C:/Program Files (x86)/MSBuild/12.0/Bin/msbuild.exe\""
+let g:project_build_opts = ""
+let g:project_project_rel_path = "build/mylib"
+let g:project_project_name = "mySmallLib.vcxproj"
+let g:project_exe_name = "libtest.exe"
+
+both of the above configuration use a CMake configuration with a visual studio
+generator
+
+the variable that points the executable name is not currently utilized, but
+it will be in the future for quickly executing the named executable 
