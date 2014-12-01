@@ -2,7 +2,7 @@
 "Last Change: 28 Nov 2014
 "Maintainer: Aris Karagiannidis <arkaragian@gmail.com>
 "
-"Version : 0.0.1
+"Version : 0.2
 "
 "The script logic is quite simple. The folder that contains the file root.vim
 "is the root folder of the project. This project may contain multiple
@@ -47,9 +47,11 @@ function! s:GetDirOfFileInTree(filename)
 	"top level directory the length of the string will be 3 or less
 	if strlen(dir) <= 3
 		return getcwd()
+		echom a:filename . " was not found in " .getcwd()
 	else
 		return dir
 	endif
+	echom "Refreshing Solution"
 endfunction
 
 "Use the above function to find the root
@@ -80,7 +82,7 @@ function! BuildProject(type)
 		let prefix = "root_"
 		let conf_file = "root.vim"	
 	elseif (a:type == "proj")
-		let prefix = "project_"
+		let prefix = "proj_"
 		let conf_file = "project.vim"
 	else
 		echo "Error: No or invalid argument in the function"
@@ -115,33 +117,116 @@ function! BuildProject(type)
 		return
 	endif
 
-	if !exists("g:".prefix."project_rel_path")
-		echo "No g:".prefix."project_rel_path variable exists check your ".conf_file
+	if !exists("g:".prefix."build_dir_rel_path")
+		echo "No g:".prefix."build_dir_rel_path variable exists check your ".conf_file
 		return
 	endif
-	if !exists("g:".prefix."project_name")
-		echo "No g:".prefix."project_name variable exists check your ".conf_file
+	if !exists("g:".prefix."recipe_file")
+		echo "No g:".prefix."recipe_file variable exists check your ".conf_file
+		return
+	endif
+	if !exists("g:".prefix."build_arguments")
+		echo "No g:".prefix."build_arguments variable exists check your ".conf_file
 		return
 	endif
 
-	echo "All variables set! Building Root project"
+	if(a:type == "root")
+		echo "All variables set! Building Root project"
+	elseif (a:type == "proj")
+		echo "All variables set! Building Sub-project"
+	endif
 
 	"Those are global variables that are defined inside the root.vim
 	"that we previously sourced
 
 
 	if(a:type == "root")
-		let project_path = g:root_dir."/".g:root_project_rel_path."/".g:root_project_name
+		let project_path = g:root_dir."/".g:root_build_dir_rel_path."/".g:root_recipe_file." ".g:root_build_arguments
 		execute("!".g:root_build_exe." ".g:root_build_opts." ".project_path)
 	elseif (a:type == "proj")
-		let project_path = g:root_dir."/".g:project_project_rel_path."/".g:project_project_name
-		execute("!".g:project_build_exe." ".g:project_build_opts." ".project_path)
+		let project_path = g:root_dir."/".g:proj_build_dir_rel_path."/".g:proj_recipe_file." ".g:proj_build_arguments
+		execute("!".g:proj_build_exe." ".g:proj_build_opts." ".project_path)
 	else
 		echo "Error: No or invalid argument in the function"
 		return
 	endif
 endfunction
 
+"Excute porject, same plilosophy as the previous function
+"But here we need the exetutable location
+"Options and arguments
+function! ExecuteProject(type)
+
+	"Prefix of the variables that are to be used
+	"conf_file the configuration file that contains the
+	"variables
+	let prefix = ""
+	let conf_file   = ""
+
+	if(a:type == "root")
+		let prefix = "root_"
+		let conf_file = "root.vim"	
+	elseif (a:type == "proj")
+		let prefix = "proj_"
+		let conf_file = "project.vim"
+	else
+		echo "Error: No or invalid argument in the function"
+		return
+	endif
+
+
+	try
+		if(a:type == "root")
+			:exec ":source " .g:root_dir. "/root.vim"
+		elseif (a:type == "proj")
+			:exec ":source " .g:proj_dir. "/project.vim"
+		else
+			echo "Error: No or invalid argument in the function"
+			return
+		endif
+	catch
+		echo "No root.vim/project.vim file found. Aborting execution"	
+		return
+	endtry
+
+	"Builds the variable name according to the prefix
+	"e.g    g:root_build_exe or
+	"    g:project_build_exe
+
+	if !exists("g:".prefix."exe_dir_rel_path")
+		echo "No g:".prefix."build_dir_rel_path variable exists check your ".conf_file
+		return
+	endif
+	if !exists("g:".prefix."exe_name")
+		echo "No g:".prefix."recipe_file variable exists check your ".conf_file
+		return
+	endif
+	if !exists("g:".prefix."exe_args")
+		echo "No g:".prefix."build_arguments variable exists check your ".conf_file
+		return
+	endif
+
+	if(a:type == "root")
+		echo "All variables set! Executing Root project"
+	elseif (a:type == "proj")
+		echo "All variables set! Executing Sub-project"
+	endif
+
+	"Those are global variables that are defined inside the root.vim
+	"that we previously sourced
+
+
+	if(a:type == "root")
+		let project_path = g:root_dir."/".g:root_exe_dir_rel_path."/".g:root_exe_name." ".g:root_exe_args
+		execute("!".project_path)
+	elseif (a:type == "proj")
+		let project_path = g:root_dir."/".g:proj_exe_dir_rel_path."/".g:proj_exe_name." ".g:proj_exe_args
+		execute("!".project_path)
+	else
+		echo "Error: No or invalid argument in the function"
+		return
+	endif
+endfunction
 
 let g:root_dir = GetRootDir()
 let g:proj_dir = GetProjectDir()
