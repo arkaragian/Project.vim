@@ -202,7 +202,7 @@ function! ExecuteProject(type)
 		return
 	endif
 	if !exists("g:".prefix."exe_args")
-		echo "No g:".prefix."build_arguments variable exists check your ".conf_file
+		echo "No g:".prefix."exe_arguments variable exists check your ".conf_file
 		return
 	endif
 
@@ -275,6 +275,7 @@ if g:project_map_keys
 	noremap <Leader>op :exec ":tabnew ".g:proj_dir. "/project.vim"<cr>
 	noremap <Leader>br :call BuildProject("root")<cr>
 	noremap <Leader>bp :call BuildProject("proj")<cr>
+	noremap <Leader>er :call ExecuteProject("root")<cr>
 endif
 
 
